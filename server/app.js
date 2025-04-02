@@ -2,7 +2,35 @@
 const express = require('express');
 const app = express();
 
+const path = require('path');
+
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+const users = {
+    "1": {
+        firstName: "Rahmon",
+        lastName: "Adeniji",
+        birthDate: "04/03/1994",
+        favouriteMovies: [
+            "War Room",
+            "The Shark",
+            "Abbatoir",
+            "Abejoye"
+        ]
+    },
+    "2": {
+        firstName: "Yinka",
+        lastName: "Adeniji",
+        birthDate: "09/19/1994",
+        favouriteMovies: [
+            "Eleven forty-five",
+            "Prophet Suddenly",
+            "Law fool",
+            "Abbatoir"
+        ]
+    }
+}
 
 /**
  *  Basic Phase 1 - Plain-text response
@@ -11,6 +39,9 @@ app.use(express.json());
  *     Response (Text): "1.0.0"
  */
 // Your code here
+app.get('/version', (req, res) => {
+    res.send("1.0.0");
+});
 
 /**
  *  Basic Phase 2 - Route param and JSON response
@@ -29,6 +60,19 @@ app.use(express.json());
  *  combined with the id sent as a route parameter in the url
  */
 // Your code here
+app.get('/viewers/:Id', (req, res) => {
+    const viewer = users[req.params.Id];
+
+    if (viewer) {
+        res.json(viewer);
+    } else {
+        res.status(404);
+        res.type('html');
+        res.send(`Viewer with Id ${req.params.Id} not found`);
+    }
+});
+
+
 
 /** Basic Phase 3 - Query params in URL
  *      Method: GET
@@ -48,6 +92,15 @@ app.use(express.json());
  *          message required
  */
 // Your code here
+app.get('/info', (req, res) => {
+    const { message } = req.query;
+
+    if (message) {
+        res.send(message);
+    } else {
+        res.send("message required");
+    }
+});
 
 /**
  *  IMPORTANT: Scroll to the top for basic phases.
@@ -82,6 +135,22 @@ app.use(express.json());
  *          { "id": 98765432, "name": "Honey Sweet", "year": 1967, "isFavorite": false }
  */
 // Your code here
+app.post('/movies', (req, res) => {
+    let reqBody = req.body;
+    if (reqBody.favorite === "on") {
+        reqBody.isfavorite = true;
+        delete reqBody.favorite;
+    } else {
+        reqBody.isfavorite = false;
+    }
+
+    reqBody = {
+        ...{ id: (Math.floor(Math.random() * 10000000)) },
+        ...reqBody,
+    }
+
+    res.json(reqBody);
+})
 
 /**
  *  Advanced Bonus Phase B - Research how to return static
@@ -99,6 +168,9 @@ app.use(express.json());
  *      Test route: /logo.png
  */
 // Your code here
+app.get('/logo.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'logo.png'));
+});
 
 // DO NOT EDIT - Set port and listener
 if (require.main === module) {
